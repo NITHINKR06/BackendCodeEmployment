@@ -4,6 +4,8 @@ const cors = require("cors");
 const path = require("path");
 const authRoutes = require("./routes/auth");
 const employeeRoutes = require("./routes/employees");
+const userRoutes = require("./routes/userRoute");
+const bookingRoute = require("./routes/bookingRoute");
 const dbConfig = require("./config/db");
 const auth = require("./middleware/auth");
 
@@ -35,10 +37,13 @@ app.use(express.urlencoded({ extended: true }));
 
 // Serve static files (for profile photos, etc.)
 app.use('/uploads/Employee', express.static(path.join(__dirname, 'uploads/Employee')));
+app.use('/uploads/User', express.static(path.join(__dirname, 'uploads/User')));
 
 // Mount routes
 app.use("/api/auth", authRoutes);
 app.use("/api/employees", employeeRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/bookings", bookingRoute);
 
 // Connect to MongoDB
 mongoose.connect(dbConfig.mongoURI)

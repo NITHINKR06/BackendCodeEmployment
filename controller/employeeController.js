@@ -77,3 +77,40 @@ exports.deleteEmployee = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+exports.addReview = async (req, res) => {
+  const { id } = req.params;
+  const { name, message, rating } = req.body;
+
+  if (!name || !message || !rating) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+
+  try {
+    const employee = await Employee.findById(id);
+    if (!employee) return res.status(404).json({ message: "Employee not found" });
+
+    // Add new review
+    const newReview = { name, message, rating, date: new Date() };
+    employee.reviews.unshift(newReview);
+    await employee.save();
+
+    res.status(200).json({ message: "Review added successfully", reviews: employee.reviews });
+  } catch (error) {
+    console.error("Error adding review:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Get employee details including reviews
+exports.getEmployeeById = async (req, res) => {
+  try {
+    const employee = await Employee.findById(req.params.id);
+    if (!employee) return res.status(404).json({ message: "Employee not found" });
+    
+    res.status(200).json(employee);
+  } catch (error) {
+    console.error("Error fetching employee:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};

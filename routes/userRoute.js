@@ -4,12 +4,12 @@ const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
 const router = express.Router();
-const employeeController = require("../controller/employeeController");
+const userController = require("../controller/userController");
 
 // Configure Multer storage and ensure directory exists
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    const uploadPath = path.join(__dirname, '..', 'uploads', 'Employee');
+    const uploadPath = path.join(__dirname, '..', 'uploads', 'User');
     // Create the directory if it doesn't exist
     if (!fs.existsSync(uploadPath)) {
       fs.mkdirSync(uploadPath, { recursive: true });
@@ -25,11 +25,10 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // Define routes
-router.get("/", employeeController.getEmployees);
-router.post("/", employeeController.createEmployee);
-router.get("/:id", employeeController.getEmployeeById);
-router.put("/:id", upload.single("profilePhoto"), employeeController.updateEmployee);
-router.delete("/:id", employeeController.deleteEmployee);
-router.post("/:id/reviews", employeeController.addReview);
+router.get("/", userController.getUsers);
+router.post("/", userController.createUser);
+router.get("/:id", userController.getUserById);
+router.put("/:id", upload.single("profilePhoto"), userController.updateUser);
+router.delete("/:id", userController.deleteUser);
 
 module.exports = router;

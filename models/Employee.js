@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
 const EmployeeSchema = new mongoose.Schema({
     profilePhotoUrl: {
@@ -41,15 +42,15 @@ const EmployeeSchema = new mongoose.Schema({
     about: {
         type: String
     },
-    rating: {
-        type: Number,
-        min: 0,
-        max: 5,
-        default: 0
-    },
-    review: {
-        type: String
-    },
+    reviews: [
+        {
+          name: { type: String, required: true },
+          message: { type: String, required: true },
+          rating: { type: Number, min: 1, max: 5, required: true },
+          date: { type: Date, default: Date.now },
+        },
+    ],
+    bookings: [{ type: Schema.Types.ObjectId, ref: 'Booking' }],
     resetOTP: { 
         type: String 
     },

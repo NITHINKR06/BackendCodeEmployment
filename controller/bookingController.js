@@ -57,9 +57,6 @@ exports.bookEmployee = async (req, res) => {
 
 exports.updateBookingStatus = async (req, res) => {
   try {
-    console.log("Received update request:", req.body);
-    console.log("Request params:", req.params);
-
     // FIX: Use req.params.id because your route defines the parameter as :id
     const bookingId = req.params.id;
     const { status, cancellationReason } = req.body;
@@ -69,7 +66,6 @@ exports.updateBookingStatus = async (req, res) => {
       return res.status(400).json({ message: "Booking ID is required" });
     }
 
-    console.log("Updating Booking ID:", bookingId);
 
     let updateData = { status };
     if (status === "cancelled" && cancellationReason) {
@@ -79,14 +75,13 @@ exports.updateBookingStatus = async (req, res) => {
     const booking = await BookingsEmployee.findByIdAndUpdate(bookingId, updateData, { new: true });
 
     if (!booking) {
-      console.log("Booking not found:", bookingId);
+      console.error("Booking not found:", bookingId);
       return res.status(404).json({ message: "Booking not found" });
     }
 
     await Employee.findByIdAndUpdate(booking.employeeId, { bookingStatus: status });
     await User.findByIdAndUpdate(booking.userId, { bookingStatus: status });
 
-    console.log("Booking updated successfully:", booking);
     res.json({ message: "Booking status updated", booking });
   } catch (error) {
     console.error("Error updating booking:", error);

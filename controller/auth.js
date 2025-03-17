@@ -10,8 +10,6 @@ exports.register = async (req, res) => {
     const userExists = await User.findOne({ email });
     const employeeExists = await Employee.findOne({ email });
 
-    // console.log(userExists, employeeExists)
-
     if (userExists || employeeExists) {
       return res.status(400).json({ msg: 'User already exists' });
     }
@@ -37,7 +35,7 @@ exports.register = async (req, res) => {
       res.json({ token });
     });
   } catch (err) {
-    console.log(err.message);
+    console.error(err.message);
     res.status(500).send("Server error");
   }
 };
@@ -46,7 +44,6 @@ exports.login = async (req, res) => {
     const { email, password } = req.body;
     try {
       // Try to find the user in the "users" collection first
-      // console.log(req.body)
       let user = await User.findOne({ email });
       if (!user) {
         // If not found, try the "employees" collection
@@ -71,7 +68,7 @@ exports.login = async (req, res) => {
       });
 
     } catch (err) {
-      console.log(err.message);
+      console.error(err.message);
       res.status(500).send('Server error');
     }
   };

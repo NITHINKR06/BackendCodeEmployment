@@ -2,58 +2,46 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const bookingSchema = new Schema({
-  // References to the Employee and User documents
   employeeId: { 
     type: Schema.Types.ObjectId, 
-    ref: 'Employee', 
-    // required: true 
+    ref: 'Employee'
   },
   userId: { 
     type: Schema.Types.ObjectId, 
-    ref: 'User', 
-    // required: true 
+    ref: 'User'
   },
-  // Additional details about the booking
   jobName: { 
-    type: String, 
-    // required: true 
+    type: String
   },
-  // User information
   userName: { 
-    type: String, 
-    // required: true 
+    type: String
   },
   userEmail: { 
-    type: String, 
-    // required: true 
+    type: String
   },
   mobileNumber: { 
-    type: String, 
-    // required: true 
+    type: String
   },
-  // Booking timing details
   bookingTime: { 
-    type: String,   // e.g., "03:30 PM" (12-hr format)
-    // required: true 
+    type: String
   },
   bookingDate: { 
     type: Date, 
-    // required: true,
     default: Date.now 
   },
-  // Location details from the booking form
   location: { 
-    type: String, 
-    // required: true 
+    type: String
   },
   currentLocation: { 
-    type: String, 
-    // required: true 
+    type: String
   },
-  // Booking status field (can be used to track confirmation, cancellation, etc.)
   status: { 
     type: String, 
     default: "pending" 
+  },
+  cancellationReason: {
+    type: String,
+    default: ""
   }
 });
 

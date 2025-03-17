@@ -3,9 +3,7 @@ const Schema = mongoose.Schema;
 
 const UserSchema = new mongoose.Schema(
   {
-    profilePhotoUrl: {
-      type: String
-    },
+    profilePhotoUrl: { type: String },
     name: {
       type: String,
       required: [true, "Name is required"],
@@ -24,28 +22,29 @@ const UserSchema = new mongoose.Schema(
       required: [true, "Password is required"],
       minlength: [6, "Password must be at least 6 characters long"],
     },
-    about: {
-      type: String
-    },
-    location: {
-      type: String,
-    },
+    about: { type: String },
+    location: { type: String },
     role: {
       type: String,
-      enum: ["user", "admin"], // Allow future admin role
+      enum: ["user", "admin"],
       default: "user",
     },
     bookings: [{ type: Schema.Types.ObjectId, ref: 'Booking' }],
-    resetOTP: {
-      type: String,
-      default: null,
-    },
-    resetOTPExpires: {
-      type: Date,
-      default: null,
-    },
+    resetOTP: { type: String, default: null },
+    resetOTPExpires: { type: Date, default: null },
   },
   { timestamps: true }
 );
+
+// After a User is updated, update all related bookings.
+UserSchema.post('findOneAndUpdate', async function(doc) {
+  if (doc) {
+    const Booking = mongoose.model('Booking');
+    await Booking.updateMany({ userId: doc._id }, {
+      userName: doc.name,
+      userEmail: doc.email
+    });
+  }
+});
 
 module.exports = mongoose.model("User", UserSchema);

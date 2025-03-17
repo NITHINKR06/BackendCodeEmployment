@@ -36,12 +36,10 @@ exports.getUserById = async (req, res) => {
 
 // Update an user by ID
 exports.updateUser = async (req, res) => {
-    // console.log(req.body)
   try {
     // Copy the request body into updateData
     const updateData = { ...req.body };
 
-    // console.log(req.file)
     // If a file was uploaded, add its path to the update data
     if (req.file) {
       updateData.profilePhotoUrl = req.file.path;
@@ -54,15 +52,13 @@ exports.updateUser = async (req, res) => {
       { new: true }
     );
 
-    // console.log(updatedUser)
-
     if (!updatedUser) {
       return res.status(404).json({ message: "User not found" });
     }
 
     res.status(200).json(updatedUser);
   } catch (err) {
-    console.log("Update User Error:", err.message);
+    console.error("Update User Error:", err.message);
     res.status(500).json({ message: "Server error", error: err.message });
   }  
 };

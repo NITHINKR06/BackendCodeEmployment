@@ -23,7 +23,6 @@ exports.createEmployee = async (req, res) => {
 
 // Get an employee by ID
 exports.getEmployeeById = async (req, res) => {
-  // console.log(req.body)
   try {
     const employee = await Employee.findById(req.params.id);
     if (!employee)
@@ -39,8 +38,6 @@ exports.updateEmployee = async (req, res) => {
   try {
     // Copy the request body into updateData
     const updateData = { ...req.body };
-
-    console.log(updateData)
 
     // If a file was uploaded, add its path to the update data
     if (req.file) {
@@ -60,7 +57,7 @@ exports.updateEmployee = async (req, res) => {
 
     res.status(200).json(updatedEmployee);
   } catch (err) {
-    console.log("Update Employee Error:", err.message);
+    console.error("Update Employee Error:", err.message);
     res.status(500).json({ message: "Server error", error: err.message });
   }  
 };

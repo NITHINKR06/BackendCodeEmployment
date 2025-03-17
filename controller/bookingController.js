@@ -1,6 +1,5 @@
-// bookingController.js
-const User = require("../models/CheckIn"); // your User model
-const BookingsEmployee = require("../models/BookingsEmployee");
+const User = require("../models/CheckIn");
+const BookingsEmployee = require("../models/BookingsEmployee"); // Ensure this path/file matches your Booking model file.
 const Employee = require("../models/Employee");
 const notificationService = require("../helper/notificationService");
 
@@ -10,16 +9,16 @@ exports.bookEmployee = async (req, res) => {
       employeeId,
       userId,
       jobName,
-      userName,
-      userEmail,
+      userName,    // now coming from frontend as "userName"
+      userEmail,   // now coming from frontend as "userEmail"
       mobileNumber,
       bookingTime,
-      bookingDate, // Optional; defaults to Date.now if not provided.
+      bookingDate, // now coming as a proper Date object
       location,
       currentLocation
     } = req.body;
 
-    // Create a new booking instance.
+    // Create a new booking
     const newBooking = new BookingsEmployee({
       employeeId,
       userId,
@@ -31,22 +30,16 @@ exports.bookEmployee = async (req, res) => {
       bookingDate: bookingDate || Date.now(),
       location,
       currentLocation
-      // "status" will default to "pending" per your booking schema.
     });
 
     await newBooking.save();
 
-    // Add booking to User using the newBooking variable.
     await User.findByIdAndUpdate(userId, { $push: { bookings: newBooking._id } });
-
-    // Add booking to Employee using the newBooking variable.
     await Employee.findByIdAndUpdate(employeeId, { $push: { bookings: newBooking._id } });
 
-    // Fetch employee and user details for notifications.
     const employee = await Employee.findById(employeeId);
     const user = await User.findById(userId);
 
-    // Emit new booking notification (to employee).
     notificationService.emit('newBooking', { employee, booking: newBooking });
 
     res.status(201).json({
@@ -54,7 +47,7 @@ exports.bookEmployee = async (req, res) => {
       booking: newBooking
     });
   } catch (error) {
-    console.error("Error creating booking:", error);
+    console.error("Error creating booking:", error.message);
     res.status(500).json({
       message: "Server error",
       error: error.message
@@ -64,67 +57,92 @@ exports.bookEmployee = async (req, res) => {
 
 exports.updateBookingStatus = async (req, res) => {
   try {
-    const { bookingId } = req.params;
-    const { status } = req.body; // status should be "pending", "cancelled", or "confirmed"
+    console.log("Received update request:", req.body);
+    console.log("Request params:", req.params);
 
-    // Update booking document.
-    const booking = await BookingsEmployee.findByIdAndUpdate(
-      bookingId,
-      { status },
-      { new: true }
-    );
+    // FIX: Use req.params.id because your route defines the parameter as :id
+    const bookingId = req.params.id;
+    const { status, cancellationReason } = req.body;
+
+    if (!bookingId) {
+      console.error("❌ Booking ID is undefined");
+      return res.status(400).json({ message: "Booking ID is required" });
+    }
+
+    console.log("Updating Booking ID:", bookingId);
+
+    let updateData = { status };
+    if (status === "cancelled" && cancellationReason) {
+      updateData.cancellationReason = cancellationReason;
+    }
+
+    const booking = await BookingsEmployee.findByIdAndUpdate(bookingId, updateData, { new: true });
+
     if (!booking) {
+      console.log("Booking not found:", bookingId);
       return res.status(404).json({ message: "Booking not found" });
     }
 
-    // Update booking status in both Employee and User models.
     await Employee.findByIdAndUpdate(booking.employeeId, { bookingStatus: status });
     await User.findByIdAndUpdate(booking.userId, { bookingStatus: status });
 
-    // Fetch updated employee and user details for notifications.
-    const employee = await Employee.findById(booking.employeeId);
-    const user = await User.findById(booking.userId);
-
-    // Emit booking status update notification (to both employee and user).
-    notificationService.emit('bookingStatusUpdated', { employee, user, bookingStatus: status });
-
-    res.json({
-      message: "Booking status updated successfully",
-      booking
-    });
+    console.log("Booking updated successfully:", booking);
+    res.json({ message: "Booking status updated", booking });
   } catch (error) {
-    console.error("Error updating booking status:", error);
-    res.status(500).json({
-      message: "Server error",
-      error: error.message
-    });
+    console.error("Error updating booking:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
 exports.getUserBookings = async (req, res) => {
-
   try {
     const { userId } = req.params;
-    const bookings = await BookingsEmployee.find({ userId })
+    const bookings = await BookingsEmployee.find({ userId });
     res.json(bookings);
-    // console.log(bookings,'bookings')
   } catch (error) {
-    console.log("Error fetching bookings:", error);
+    console.error("Error fetching bookings:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+exports.getEmployeeBookings = async (req, res) => {
+  try {
+    const { employeeId } = req.params;
+    const bookings = await BookingsEmployee.find({ employeeId });
+    res.json(bookings);
+  } catch (error) {
+    console.error("Error fetching bookings:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
 
 exports.getBookingById = async (req, res) => {
   try {
-    const { id } = req.params; // booking id
+    const { id } = req.params;
     const booking = await BookingsEmployee.findById(id);
-    console.log(booking)
     if (!booking) {
       return res.status(404).json({ message: "Booking not found" });
     }
     res.json(booking);
   } catch (error) {
     console.error("Error fetching booking:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+exports.getBookingsByUserAndEmployee = async (req, res) => {
+  try {
+    const { userId, employeeId } = req.params;
+    
+    const bookings = await BookingsEmployee.find({ userId, employeeId }).select('bookingDate');
+    
+    if (!bookings.length) {
+      return res.status(404).json({ message: "No bookings found for this user and employee." });
+    }
+
+    res.json(bookings);
+  } catch (error) {
+    console.error("Error fetching bookings:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };

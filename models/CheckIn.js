@@ -29,6 +29,7 @@ const UserSchema = new mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
+    active: { type: Boolean, default: true },
     bookings: [{ type: Schema.Types.ObjectId, ref: 'Booking' }],
     resetOTP: { type: String, default: null },
     resetOTPExpires: { type: Date, default: null },

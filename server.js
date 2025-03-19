@@ -6,6 +6,7 @@ const authRoutes = require("./routes/auth");
 const employeeRoutes = require("./routes/employees");
 const userRoutes = require("./routes/userRoute");
 const bookingRoute = require("./routes/bookingRoute");
+const adminRoutes = require("./routes/adminRoutes");
 const dbConfig = require("./config/db");
 const auth = require("./middleware/auth");
 
@@ -44,6 +45,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/employees", employeeRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/bookings", bookingRoute);
+app.use("/api/admin", adminRoutes);
 
 // Connect to MongoDB
 mongoose.connect(dbConfig.mongoURI)
